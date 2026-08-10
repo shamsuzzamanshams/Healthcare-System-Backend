@@ -18,6 +18,6 @@ export interface IRequestUser {
 	role: Role;
 }
 
-export interface IGoogleLoginPayload{
+export interface IGoogleLoginPayload {
 	idToken: string;
 }
