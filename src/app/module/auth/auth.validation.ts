@@ -14,6 +14,18 @@ const PatientRegistrationZodSchema = z.object({
 	}).optional()
 })
 
-export const PatientValidation ={
-    PatientRegistrationZodSchema
+const loginZodSchema = z.object({
+    email: z.email("Not a Email"),
+    password:z.string()
+		.min(8,"Password must be 8 chatecter long")
+		.regex(/[A-Z]/, "password must be contain 1 Upper case letter")
+    	.regex(/[a-z]/, "password must be contain 1 lower case letter")
+      	.regex(/[0-9]/, "password must be contain 1 Number")
+      	.regex(/[^A-Za-z0-9]/, "password must be contain 1 statial number"),
+
+})
+
+export const UserValidation ={
+    PatientRegistrationZodSchema,
+    loginZodSchema
 }
