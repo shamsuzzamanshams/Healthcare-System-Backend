@@ -33,8 +33,9 @@ const registerPatient = async (payload: IRegisterPatientPayload) => {
 
 	const createdUser = await prisma.user.create({
 		data: {
-			name,
-			email,
+			// name,
+			// email,
+			...payload,
 			password: hashedPassword,
 			role: Role.PATIENT,
 			status: UserStatus.ACTIVE,
