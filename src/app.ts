@@ -13,6 +13,7 @@ import { notFound } from "./app/middleware/notFound";
 import { AuthRoutes } from "./app/module/auth/auth.route";
 import z, { email } from "zod";
 import { redisClient } from "./app/lib/redis";
+import crypto from "crypto";
 
 const app: Application = express();
 
@@ -76,12 +77,15 @@ app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
 
 	try {
 
-		await redisClient.set("forgot-password-otp:patient1@gmail.com","123456",{
-			expiration:{
-				type: "EX",
-				value: 60
-			}
-		})
+
+		const otp = crypto.randomInt(100000, 1000000)
+
+		// await redisClient.set("forgot-password-otp:patient1@gmail.com","123456",{
+		// 	expiration:{
+		// 		type: "EX",
+		// 		value: 60
+		// 	}
+		// })
 		
 
 
