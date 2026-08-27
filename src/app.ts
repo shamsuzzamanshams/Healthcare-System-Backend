@@ -15,6 +15,8 @@ import z, { email } from "zod";
 import { redisClient } from "./app/lib/redis";
 import crypto from "crypto";
 import { UserRoutes } from "./app/module/user/user.route";
+import { getBkashToken } from "./app/lib/bkash";
+import { AppointmentRoutes } from "./app/module/appointment/appointment.route";
 
 const app: Application = express();
 
@@ -34,6 +36,7 @@ app.use(cookieParser());
 
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/user", UserRoutes);
+app.use("/api/v1/appointment", AppointmentRoutes)
 
 
 // app.post("/zod",async (req: Request, res: Response, next: NextFunction) => {
@@ -81,14 +84,9 @@ app.get("/test", async (req: Request, res: Response, next : NextFunction) => {
 	try {
 
 
-		const otp = crypto.randomInt(100000, 1000000)
-
-		// await redisClient.set("forgot-password-otp:patient1@gmail.com","123456",{
-		// 	expiration:{
-		// 		type: "EX",
-		// 		value: 60
-		// 	}
-		// })
+		const grantIdTokenResult = await getBkashToken()
+		console.log(grantIdTokenResult);
+		
 		
 
 
