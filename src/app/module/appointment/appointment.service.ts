@@ -27,7 +27,7 @@ const bookAppointment = async () => {
 				amount: "1200",
 				currency: "BDT",
 				intent: "sale",
-				merchantInvoiceNumber: "Inv01",
+				merchantInvoiceNumber: "Inv02",
 			}),
 		},
 	);
@@ -64,15 +64,39 @@ const bookAppointmentCallback = async (query: Record<string, any>) => {
 				"X-App-Key": config.bkash_app_key,
 			},
 
-            body: JSON.stringify({
-                paymentID: paymentId
-            })
+			body: JSON.stringify({
+				paymentID: paymentId,
+			}),
 		},
 	);
 
-    const executedPaymentResult = await executedPaymentResponse.json()
+	const executedPaymentResult = await executedPaymentResponse.json();
 
-    return executedPaymentResult
+	if (status === "success") {
+		return {
+			executedPaymentResult,
+			redirectUrl: `${config.frontend_url}/dashboard/my-appointment?status=success`,
+		};
+	}
+
+	if (status === "failure") {
+		return {
+			executedPaymentResult,
+			redirectUrl: `${config.frontend_url}/dashboard/my-appointment?status=failure`,
+		};
+	}
+
+	if (status === "cancel") {
+		return {
+			executedPaymentResult,
+			redirectUrl: `${config.frontend_url}/dashboard/my-appointment?status=cancel`,
+		};
+	}
+
+	return {
+		executedPaymentResult,
+		redirectUrl: `${config.frontend_url}/dashboard/my-appointment`
+	};
 };
 
 export const AppointmentService = {
