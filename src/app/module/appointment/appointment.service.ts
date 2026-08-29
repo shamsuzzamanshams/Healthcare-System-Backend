@@ -1,9 +1,22 @@
 import { success } from "zod";
 import config from "../../config";
 import { getBkashToken } from "../../lib/bkash";
+import { prisma } from "../../lib/prisma";
+import { AppointmentStatus } from "../../../generated/prisma/enums";
+import { RequstUser } from "../../middleware/checkAuth";
 
-const bookAppointment = async () => {
-	const bkashIdToken = await getBkashToken();
+const bookAppointment = async (payload: any, user: RequstUser) => {
+	const transactionResult = await prisma.$transaction(async (tx) => {
+
+		// busness logic
+
+
+		const appointment = await tx.appointment.create({
+			data:{
+				status: AppointmentStatus.PENDING
+			}
+		})
+		const bkashIdToken = await getBkashToken();
 
 	if (!bkashIdToken) {
 		throw new Error("No bkash access token found!");
@@ -21,20 +34,36 @@ const bookAppointment = async () => {
 
 			body: JSON.stringify({
 				mode: "0011",
-				payerReference: "01723888888",
+				payerReference: user.email,
 				callbackURL: `${config.bkash_callback_url}/appointment/book-appointment/payment/callback`,
-				merchantAssociationInfo: "MI05MID54RF09123456One",
+				// merchantAssociationInfo: "MI05MID54RF09123456One",
 				amount: "1200",
 				currency: "BDT",
 				intent: "sale",
-				merchantInvoiceNumber: "Inv02",
+				merchantInvoiceNumber: appointment.id,
 			}),
 		},
 	);
 
 	const bkashCreatePaymentResult = await bkashCreatePaymentResponse.json();
 
-	return bkashCreatePaymentResult;
+	// payment model create
+
+	await tx.payment.create({
+		data:{
+			merchantInvoiceNumber: bkashCreatePaymentResult.merchantInvoiceNumber,
+			appointmentId: appointment.id,
+			amount: "1200",
+			getwayResponse: bkashCreatePaymentResult,
+			bkashPaymentId: bkashCreatePaymentResult.paymentID,
+			payerReference: user.email
+		}
+	})
+
+	return bkashCreatePaymentResult.bkashURL;
+	})
+
+	return transactionResult
 };
 
 const bookAppointmentCallback = async (query: Record<string, any>) => {
