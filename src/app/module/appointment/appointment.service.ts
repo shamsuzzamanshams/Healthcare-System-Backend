@@ -347,7 +347,7 @@ const cancelAppointment = async (payload: any) => {
 		}
 
 		const bkashRefundPaymentResponse = await fetch(
-			`${config.bkash_base_url}/v2/tokenized-checkout/refund/payment/transaction`,
+			`${config.bkash_base_url}/tokenized/checkout/payment/refund`,
 			{
 				method: "POST",
 				headers: {
@@ -360,11 +360,16 @@ const cancelAppointment = async (payload: any) => {
 					paymentId: existingAppointment.payment?.bkashPaymentId,
 					trxId: existingAppointment.payment?.bkashTrxId,
 					refundAmount: existingAppointment.payment?.amount,
+					sku: "Appointment Cancellation",
 					reason: "Patient cancel appointment",
+					
 				}),
 			});
 
 		const bkashRefundPaymentResult = await bkashRefundPaymentResponse.json();
+
+		console.log({bkashRefundPaymentResult});
+		
 
 		const updatePayment = await tx.payment.update({
 			where:{
@@ -374,7 +379,9 @@ const cancelAppointment = async (payload: any) => {
 				refundTrxId: bkashRefundPaymentResult.refundTrxId,
 				refundAt: bkashRefundPaymentResult.completedTime,
 				refundAmount: bkashRefundPaymentResult.refundAmount,
-				refundReason: bkashRefundPaymentResult.reason
+				refundReason: bkashRefundPaymentResult.reason,
+				status: PaymentStatus.REFUNDED,
+				getwayResponse: bkashRefundPaymentResult,
 			}
 		})
 		return{
