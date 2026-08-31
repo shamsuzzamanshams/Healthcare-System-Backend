@@ -357,9 +357,9 @@ const cancelAppointment = async (payload: any) => {
 					"X-App-Key": config.bkash_app_key,
 				},
 				body: JSON.stringify({
-					paymentId: existingAppointment.payment?.bkashPaymentId,
-					trxId: existingAppointment.payment?.bkashTrxId,
-					refundAmount: existingAppointment.payment?.amount,
+					paymentID: existingAppointment.payment?.bkashPaymentId,
+					trxID: existingAppointment.payment?.bkashTrxId,
+					amount: existingAppointment.payment?.amount.toString(),
 					sku: "Appointment Cancellation",
 					reason: "Patient cancel appointment",
 					
@@ -376,10 +376,10 @@ const cancelAppointment = async (payload: any) => {
 				appointmentId: existingAppointment.id
 			},
 			data:{
-				refundTrxId: bkashRefundPaymentResult.refundTrxId,
+				refundTrxId: bkashRefundPaymentResult.refundTrxID,
 				refundAt: bkashRefundPaymentResult.completedTime,
-				refundAmount: bkashRefundPaymentResult.refundAmount,
-				refundReason: bkashRefundPaymentResult.reason,
+				refundAmount: bkashRefundPaymentResult.amount,
+				refundReason: "Patient cancel appointment",
 				status: PaymentStatus.REFUNDED,
 				getwayResponse: bkashRefundPaymentResult,
 			}
