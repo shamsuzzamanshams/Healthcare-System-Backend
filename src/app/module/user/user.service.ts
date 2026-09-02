@@ -2,6 +2,8 @@ import { error, log } from "node:console";
 import { cloudinary } from "../../lib/cloudinary";
 import { Result } from "pg";
 import { prisma } from "../../lib/prisma";
+import AppError from "../../utils/AppError";
+import httpStatus from "http-status";
 import { UploadApiResponse } from "cloudinary";
 
 const uploadProfileImage = async (buffer: Buffer, userId: string) => {
@@ -11,7 +13,7 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
 	//     },
 	//    async (error, result) =>{
 	//         if(error){
-	//             throw new Error(error.message)
+	//             throw new AppError(httpStatus.BAD_GATEWAY, error.message)
 	//         }
 	//         console.log(result, "result");
 
@@ -51,9 +53,9 @@ const uploadProfileImage = async (buffer: Buffer, userId: string) => {
 							return reject(error);
 						}
 
-						if (!result) {
-							return reject(new Error("No result return from cloudinary"));
-						}
+					if (!result) {
+						return reject(new AppError(httpStatus.BAD_GATEWAY, "No result return from cloudinary"));
+					}
 
 						resolve(result);
 						console.log(result, "result");

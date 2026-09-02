@@ -1,6 +1,8 @@
 import { UploadApiResponse } from "cloudinary";
 import { prisma } from "../../lib/prisma";
 import { cloudinary } from "../../lib/cloudinary";
+import AppError from "../../utils/AppError";
+import httpStatus from "http-status";
 import { file } from "zod";
 import config from "../../config";
 import bcrypt from "bcryptjs";
@@ -17,7 +19,7 @@ const applyDoctor = async (
 		},
 	});
 	if (isUserExists) {
-		throw new Error("User already exist with this email");
+		throw new AppError(httpStatus.CONFLICT, "User already exist with this email");
 	}
 
 	const resumeUploadResult = await new Promise<UploadApiResponse>(
@@ -32,9 +34,9 @@ const applyDoctor = async (
 							return reject(error);
 						}
 
-						if (!result) {
-							return reject(new Error("No result return from cloudinary"));
-						}
+					if (!result) {
+						return reject(new AppError(httpStatus.BAD_GATEWAY, "No result return from cloudinary"));
+					}
 
 						resolve(result);
 						console.log(result, "result");
@@ -57,9 +59,9 @@ const applyDoctor = async (
 								return reject(error);
 							}
 
-							if (!result) {
-								return reject(new Error("No result returned from Cloudinary"));
-							}
+						if (!result) {
+							return reject(new AppError(httpStatus.BAD_GATEWAY, "No result returned from Cloudinary"));
+						}
 
 							resolve(result);
 						},

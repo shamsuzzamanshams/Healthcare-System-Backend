@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { Role } from "../../../generated/prisma/enums";
 import { auth } from "../../middleware/checkAuth";
+import AppError from "../../utils/AppError";
+import httpStatus from "http-status";
 import { AuthController } from "./auth.controller";
 
 import { validateRequest } from "../../middleware/validateRequest";
@@ -18,7 +20,7 @@ router.post("/register",
 
 	// 		if(!result.success){
 
-	// 			throw new Error(result.error.issues[0].message)
+	// 			throw new AppError(httpStatus.BAD_REQUEST, result.error.issues[0].message)
 	// 		}
 
 	// 		next()
