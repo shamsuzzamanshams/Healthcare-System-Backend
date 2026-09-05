@@ -13,6 +13,7 @@ import { RequstUser } from "../../middleware/checkAuth";
 import { IBookAppointmentPayload } from "./appointment.interface";
 import { addMinutes, isBefore, isSameDay } from "date-fns";
 import { transpoter } from "../../lib/nodemailer";
+import  PDFDocument  from "pdfkit";
 
 const bookAppointment = async (payload: IBookAppointmentPayload, user: RequstUser) => {
 	const transactionResult = await prisma.$transaction(async (tx) => {
@@ -341,17 +342,60 @@ const bookAppointmentCallback = async (query: Record<string, any>) => {
 				},
 			});
 
+			const pdfDocument = new PDFDocument({ margin : 50});
+
+			const pdfChunks : Buffer[] = []
+
+			pdfDocument.on("data", (chunk : Buffer) => {
+				pdfChunks.push(chunk)
+			})
+
+			const pdfReadyPromise = new Promise<Buffer>((resolve)=>{
+				pdfDocument.on("end", () => {
+					resolve(Buffer.concat(pdfChunks))
+				})
+			})
+
+			pdfDocument.fontSize(20).text("PH Healthcare System", {align : "center"});
+			pdfDocument.fontSize(14).text("Appointment Invoice", { align: "center" });
+			pdfDocument.moveDown(2)
+
+			pdfDocument.fontSize(12).text(`Patient Name: ${appointment.patient?.name}`);
+			pdfDocument.text(`Patient Email: ${appointment.patient?.email}`);
+			pdfDocument.moveDown();
+
+			pdfDocument.text(`Doctor Name: ${appointment.doctor?.name}`);
+			pdfDocument.text(`Specialization: ${appointment.doctor?.specialization}`);
+			pdfDocument.moveDown();
+
+			pdfDocument.text(
+				`Appointment Date: ${appointment.schedule.startDateTime.toDateString()}`,
+			);
+			pdfDocument.text(`Your Joining Time: ${joiningTime.toString()}`);
+			pdfDocument.text(`Your Serial Number: ${serialNumber}`);
+			pdfDocument.text(`Meeting Link: ${appointment.schedule.meetingLink}`);
+			pdfDocument.moveDown();
+
+			pdfDocument.text(`Amount Paid: ${executedPaymentResult.amount} BDT`);
+			pdfDocument.text(`Payment Method: bKash`);
+			pdfDocument.text(`Transaction Id: ${executedPaymentResult.trxID}`);
+			pdfDocument.text(`Paid At: ${executedPaymentResult.paymentExecuteTime}`);
+
+			pdfDocument.end()
+
+			const pdfBuffer = await pdfReadyPromise;
+
 			await transpoter.sendMail({
 				from: config.email_sender,
 				to: appointment.patient.email,
 				subject: "Your Appointment Invoice - PH Healthcare System",
 				text: "Thank you for booking an appointment. Please find your invoice attached.",
-				// attachments : [
-				// 	{
-				// 		filename: "invoice.pdf",
-				// 		content : pdfBuffer
-				// 	}
-				// ]
+				attachments : [
+					{
+						filename: "invoice.pdf",
+						content : pdfBuffer
+					}
+				]
 			})
 			return {
 				redirectUrl: `${config.frontend_url}/dashboard/my-appointment?status=success`,
