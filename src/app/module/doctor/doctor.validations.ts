@@ -1,37 +1,71 @@
 import { z } from "zod";
 
-export const applyDoctorValidationZodSchema = z.object({
+export const ApplyAsDoctorValidationZodSchema = z.object({
 	user: z.object({
-		name: z
-			.string()
-			.min(2, "Name must be at least 2 characters long")
-			.max(50, "Name cannot exceed 50 characters"),
-		email: z.email("Invalid email format"),
+		name: z.string().trim().min(2, "Name must be at least 2 characters long"),
+
+		email: z.email("Invalid email address").trim().toLowerCase(),
 	}),
+
 	doctor: z.object({
-		specialization: z.string().min(2, "Specialization is required"),
-		licenseNumber: z.string().min(3, "Invalid license number"),
-		qualifications: z.string().min(2, "Qualifications are required"),
+		address: z
+			.string()
+			.trim()
+			.min(5, "Address must be at least 5 characters long")
+			.optional(),
+
+		specialization: z.string().trim().min(2, "Specialization is required"),
+
+		licenseNumber: z.string().trim().min(3, "License number is required"),
+
+		qualifications: z.string().trim().min(2, "Qualifications are required"),
+
+		// Handles converting incoming FormData strings like "12" into an integer number
 		experienceYears: z
 			.number()
-			.int("Years of experience must be an integer")
-			.min(0, "Experience cannot be negative")
-			.optional(),
+			.int("Experience years must be an integer")
+			.min(0, "Experience years cannot be negative"),
+
 		bio: z
 			.string()
+			.trim()
 			.max(1000, "Bio cannot exceed 1000 characters")
-			.optional()
-			.nullable(),
-		consultationFee: z.number().min(0, "fee can not negative").optional(),
+			.optional(),
+
+		// Handles converting incoming FormData strings like "150.00" into a float number
+		consultationFee: z
+			.number()
+			.min(0, "Consultation fee cannot be negative")
+			.optional(),
 		contactNumber: z
 			.string()
 			.trim()
-			.min(5, "contact number is invalid")
+			.min(5, "Contact number is invalid")
 			.optional(),
-		address: z
-			.string()
-			.max(255, "Address cannot exceed 255 characters")
-			.optional()
-			.nullable(),
 	}),
+});
+
+export const UpdateDoctorProfileValidationZodSchema = z.object({
+	address: z
+		.string()
+		.trim()
+		.min(5, "Address must be at least 5 characters long")
+		.optional(),
+
+	bio: z
+		.string()
+		.trim()
+		.max(1000, "Bio cannot exceed 1000 characters")
+		.optional(),
+
+	consultationFee: z
+		.number()
+		.min(0, "Consultation fee cannot be negative")
+		.optional(),
+
+	contactNumber: z
+		.string()
+		.trim()
+		.min(5, "Contact number is invalid")
+		.optional(),
 });
